@@ -20,10 +20,12 @@ const lessonSchema = z.object({
 
 // Parse frontmatter from MDX content
 function parseFrontmatter(content: string): { frontmatter: any; content: string } {
-  const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
+  // More flexible regex that handles different line endings and encoding
+  const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/;
   const match = content.match(frontmatterRegex);
   
   if (!match) {
+    console.log('No frontmatter match found. Content preview:', content.substring(0, 200));
     throw new Error('No frontmatter found in lesson');
   }
   
@@ -32,11 +34,14 @@ function parseFrontmatter(content: string): { frontmatter: any; content: string 
   
   // Parse YAML-like frontmatter
   const frontmatter: any = {};
-  frontmatterText.split('\n').forEach(line => {
-    const [key, ...valueParts] = line.split(':');
-    if (key && valueParts.length > 0) {
-      const value = valueParts.join(':').trim().replace(/^["']|["']$/g, '');
-      frontmatter[key.trim()] = value;
+  frontmatterText.split(/\r?\n/).forEach(line => {
+    const colonIndex = line.indexOf(':');
+    if (colonIndex > 0) {
+      const key = line.substring(0, colonIndex).trim();
+      const value = line.substring(colonIndex + 1).trim().replace(/^["']|["']$/g, '');
+      if (key && value) {
+        frontmatter[key] = value;
+      }
     }
   });
   
@@ -99,28 +104,39 @@ const lessonsDir = path.resolve(process.cwd(), '..', 'frontend', 'src', 'lessons
 
 app.get('/api/lessons', async (_req, res) => {
   try {
+    console.log('Lessons directory:', lessonsDir);
     const tracks = ['javascript', 'react', 'typescript'];
     const lessons = [] as Array<z.infer<typeof lessonSchema>>;
     
     for (const track of tracks) {
       const trackDir = path.join(lessonsDir, track);
+      console.log('Checking track directory:', trackDir);
       try {
         const files = await fs.readdir(trackDir);
+        console.log(`Files in ${track}:`, files);
         for (const file of files) {
           if (file.endsWith('.mdx')) {
             const filePath = path.join(trackDir, file);
+            console.log('Processing MDX file:', filePath);
             const content = await fs.readFile(filePath, 'utf8');
             const lesson = parseLesson(content);
+            console.log('Parsed lesson:', lesson);
             const parsed = lessonSchema.safeParse(lesson);
-            if (parsed.success) lessons.push(parsed.data);
+            if (parsed.success) {
+              lessons.push(parsed.data);
+              console.log('Added lesson:', parsed.data.title);
+            } else {
+              console.error('Failed to parse lesson:', parsed.error);
+            }
           }
         }
       } catch (err) {
-        // Track directory doesn't exist, skip
+        console.error(`Error reading track ${track}:`, err);
         continue;
       }
     }
     
+    console.log('Total lessons found:', lessons.length);
     lessons.sort((a, b) => a.id - b.id);
     res.json(lessons.map(l => ({ id: l.id, title: l.title, track: l.track, difficulty: l.difficulty })));
   } catch (err) {
