@@ -1,0 +1,7 @@
+{
+  "id": 1,
+  "title": "Μάθημα 1: Η πρώτη σου εκτύπωση",
+  "explanation": "Στην JavaScript, η εντολή console.log εμφανίζει κάτι στην κονσόλα. Ας ξεκινήσουμε με ένα κλασικό παράδειγμα.",
+  "starterCode": "console.log()",
+  "solution": "console.log('Γειά σου Κόσμε')"
+}
