@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
-import { Lesson } from './types'
+import type { Lesson } from './types'
 import { Card, CardContent, Button, Progress } from './components/ui'
 import Editor from '@monaco-editor/react'
 import { useProgress } from './hooks/useProgress'
