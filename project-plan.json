@@ -1,0 +1,162 @@
+{
+  "project": {
+    "name": "MidnightJS",
+    "description": "Full-stack JavaScript learning platform with Greek/English support",
+    "version": "0.1.0",
+    "techStack": {
+      "frontend": "React + TypeScript + Vite + Tailwind CSS",
+      "backend": "Node.js + Express + TypeScript",
+      "database": "PostgreSQL (Supabase)",
+      "auth": "Google OAuth",
+      "deployment": "Vercel (frontend) + Railway (backend)"
+    }
+  },
+  "mvp": {
+    "scope": "Ship in 1-2 weeks",
+    "features": [
+      "Homepage with Greek copy, CTA, lesson dropdown",
+      "Lessons API serving metadata and content",
+      "Full-screen Monaco editor with README drawer",
+      "Run/reset/solution buttons with keyboard shortcuts",
+      "Progress tracking (localStorage initially)",
+      "10 JavaScript lessons (Greek)",
+      "5 React lessons (Greek)", 
+      "5 TypeScript lessons (Greek)",
+      "Basic sandbox code execution and output checking",
+      "Dark theme UI with glass morphism design"
+    ],
+    "lessons": {
+      "javascript": [
+        "Console.log και πρώτες εντολές",
+        "Μεταβλητές (let, const, var)",
+        "Αριθμοί και πράξεις",
+        "Συμβολοσειρές και template literals",
+        "Boolean και conditionals",
+        "Loops (for, while)",
+        "Συναρτήσεις και parameters",
+        "Arrays και array methods",
+        "Objects και destructuring",
+        "Error handling (try/catch)"
+      ],
+      "react": [
+        "Εισαγωγή στο React και JSX",
+        "Components και Props",
+        "State με useState",
+        "Effects με useEffect",
+        "React Router και navigation"
+      ],
+      "typescript": [
+        "Βασικοί τύποι (string, number, boolean)",
+        "Unions και type guards",
+        "Interfaces και type aliases",
+        "Generics και utility types",
+        "Advanced patterns και best practices"
+      ]
+    }
+  },
+  "todo": [
+    {
+      "id": "mvp-harden",
+      "content": "Harden MVP: homepage, lesson list, full-screen editor, README drawer",
+      "status": "completed",
+      "priority": "high"
+    },
+    {
+      "id": "content-mdx",
+      "content": "Store lessons as Markdown+frontmatter; render README with MDX",
+      "status": "completed",
+      "priority": "high"
+    },
+    {
+      "id": "sandbox-tests",
+      "content": "Add sandbox test runner (iframe/worker) to auto-check user code",
+      "status": "completed",
+      "priority": "high"
+    },
+    {
+      "id": "auth-google",
+      "content": "Implement Google OAuth login (frontend) and session on backend",
+      "status": "pending",
+      "priority": "medium"
+    },
+    {
+      "id": "db-progress",
+      "content": "Persist user profile and progress in DB (users, progress, submissions)",
+      "status": "pending",
+      "priority": "medium"
+    },
+    {
+      "id": "db-design",
+      "content": "Design DB schema and choose platform (Supabase/Firestore/Postgres)",
+      "status": "pending",
+      "priority": "medium"
+    },
+    {
+      "id": "curriculum-js",
+      "content": "Build JS curriculum: basics→advanced (≥30 lessons) with checkpoints",
+      "status": "completed",
+      "priority": "high"
+    },
+    {
+      "id": "curriculum-ts",
+      "content": "Build TypeScript track: types, narrowing, generics, utility types",
+      "status": "completed",
+      "priority": "medium"
+    },
+    {
+      "id": "curriculum-react",
+      "content": "Build React track: JSX, hooks, router, state mgmt, patterns",
+      "status": "completed",
+      "priority": "medium"
+    },
+    {
+      "id": "admin-cms",
+      "content": "Create admin authoring flow (CMS-like) to add/edit lessons",
+      "status": "pending",
+      "priority": "low"
+    },
+    {
+      "id": "ui-polish",
+      "content": "Polish UI: shadcn/ui primitives, command palette, keyboard shortcuts",
+      "status": "completed",
+      "priority": "medium"
+    },
+    {
+      "id": "security-analytics",
+      "content": "Add analytics (opt-in), rate limiting, input validation (zod)",
+      "status": "pending",
+      "priority": "low"
+    },
+    {
+      "id": "testing",
+      "content": "Testing: unit (Vitest), e2e (Playwright), accessibility checks",
+      "status": "completed",
+      "priority": "medium"
+    },
+    {
+      "id": "ci-cd",
+      "content": "DevOps: GitHub Actions CI, preview deploys, staging/prod envs",
+      "status": "pending",
+      "priority": "low"
+    },
+    {
+      "id": "deploy",
+      "content": "Deployment: Frontend (Vercel), Backend (Railway/Render), DB (managed)",
+      "status": "pending",
+      "priority": "low"
+    },
+    {
+      "id": "i18n",
+      "content": "Internationalization and Greek/English toggle (i18n)",
+      "status": "pending",
+      "priority": "low"
+    }
+  ],
+  "nextSteps": [
+    "Polish lesson cards and add search/filter by track/difficulty",
+    "Implement TikTok-style vertical nav between lessons (Up/Down)",
+    "Add progress overview on homepage (per track)",
+    "Prepare CI (GitHub Actions) and deployments (Vercel/Render)",
+    "Plan DB schema and auth (Supabase + Google OAuth)"
+  ]
+}

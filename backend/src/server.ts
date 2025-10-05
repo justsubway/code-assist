@@ -11,28 +11,121 @@ app.use(express.json())
 const lessonSchema = z.object({
   id: z.number(),
   title: z.string(),
-  explanation: z.string(),
+  track: z.string(),
+  difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
+  content: z.string(),
   starterCode: z.string(),
   solution: z.string(),
 })
 
-const lessonsDir = path.resolve(process.cwd(), '..', 'lessons')
+// Parse frontmatter from MDX content
+function parseFrontmatter(content: string): { frontmatter: any; content: string } {
+  const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
+  const match = content.match(frontmatterRegex);
+  
+  if (!match) {
+    throw new Error('No frontmatter found in lesson');
+  }
+  
+  const frontmatterText = match[1];
+  const contentText = match[2];
+  
+  // Parse YAML-like frontmatter
+  const frontmatter: any = {};
+  frontmatterText.split('\n').forEach(line => {
+    const [key, ...valueParts] = line.split(':');
+    if (key && valueParts.length > 0) {
+      const value = valueParts.join(':').trim().replace(/^["']|["']$/g, '');
+      frontmatter[key.trim()] = value;
+    }
+  });
+  
+  return { frontmatter, content: contentText };
+}
+
+// Extract code blocks from content
+function extractCodeBlocks(content: string): { starterCode: string; solution: string } {
+  const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+  const blocks: string[] = [];
+  let match;
+  
+  while ((match = codeBlockRegex.exec(content)) !== null) {
+    blocks.push(match[2].trim());
+  }
+  
+  // First code block is usually the example, second is the solution
+  const starterCode = blocks[0] || '';
+  const solution = blocks[blocks.length - 1] || starterCode;
+  
+  return { starterCode, solution };
+}
+
+// Convert markdown to HTML (basic implementation)
+function markdownToHtml(markdown: string): string {
+  return markdown
+    // Headers
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+    // Bold
+    .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+    // Italic
+    .replace(/\*(.*)\*/gim, '<em>$1</em>')
+    // Inline code
+    .replace(/`([^`]+)`/gim, '<code>$1</code>')
+    // Code blocks
+    .replace(/```(\w+)?\n([\s\S]*?)```/gim, '<pre><code>$2</code></pre>')
+    // Line breaks
+    .replace(/\n/gim, '<br>');
+}
+
+// Parse a complete lesson from MDX content
+function parseLesson(content: string): any {
+  const { frontmatter, content: markdownContent } = parseFrontmatter(content);
+  const { starterCode, solution } = extractCodeBlocks(markdownContent);
+  
+  return {
+    id: parseInt(frontmatter.id),
+    title: frontmatter.title,
+    track: frontmatter.track,
+    difficulty: frontmatter.difficulty || 'beginner',
+    content: markdownToHtml(markdownContent),
+    starterCode,
+    solution
+  };
+}
+
+const lessonsDir = path.resolve(process.cwd(), '..', 'frontend', 'src', 'lessons')
 
 app.get('/api/lessons', async (_req, res) => {
   try {
-    const files = await fs.readdir(lessonsDir)
-    const lessons = [] as Array<z.infer<typeof lessonSchema>>
-    for (const file of files) {
-      if (!file.endsWith('.json')) continue
-      const raw = await fs.readFile(path.join(lessonsDir, file), 'utf8')
-      const json = JSON.parse(raw)
-      const parsed = lessonSchema.safeParse(json)
-      if (parsed.success) lessons.push(parsed.data)
+    const tracks = ['javascript', 'react', 'typescript'];
+    const lessons = [] as Array<z.infer<typeof lessonSchema>>;
+    
+    for (const track of tracks) {
+      const trackDir = path.join(lessonsDir, track);
+      try {
+        const files = await fs.readdir(trackDir);
+        for (const file of files) {
+          if (file.endsWith('.mdx')) {
+            const filePath = path.join(trackDir, file);
+            const content = await fs.readFile(filePath, 'utf8');
+            const lesson = parseLesson(content);
+            const parsed = lessonSchema.safeParse(lesson);
+            if (parsed.success) lessons.push(parsed.data);
+          }
+        }
+      } catch (err) {
+        // Track directory doesn't exist, skip
+        continue;
+      }
     }
-    lessons.sort((a, b) => a.id - b.id)
-    res.json(lessons.map(l => ({ id: l.id, title: l.title })))
+    
+    lessons.sort((a, b) => a.id - b.id);
+    res.json(lessons.map(l => ({ id: l.id, title: l.title, track: l.track, difficulty: l.difficulty })));
   } catch (err) {
-    res.status(500).json({ error: 'Σφάλμα φόρτωσης μαθημάτων' })
+    console.error('Error loading lessons:', err);
+    res.status(500).json({ error: 'Σφάλμα φόρτωσης μαθημάτων' });
   }
 })
 
@@ -40,13 +133,36 @@ app.get('/api/lessons/:id', async (req, res) => {
   try {
     const id = Number(req.params.id)
     if (!Number.isFinite(id)) return res.status(400).json({ error: 'Μη έγκυρο id' })
-    const file = path.join(lessonsDir, `${id}.json`)
-    const raw = await fs.readFile(file, 'utf8')
-    const parsed = lessonSchema.safeParse(JSON.parse(raw))
-    if (!parsed.success) return res.status(500).json({ error: 'Μη έγκυρη δομή μαθήματος' })
-    res.json(parsed.data)
+    
+    const tracks = ['javascript', 'react', 'typescript'];
+    
+    for (const track of tracks) {
+      const trackDir = path.join(lessonsDir, track);
+      try {
+        const files = await fs.readdir(trackDir);
+        for (const file of files) {
+          if (file.endsWith('.mdx')) {
+            const filePath = path.join(trackDir, file);
+            const content = await fs.readFile(filePath, 'utf8');
+            const lesson = parseLesson(content);
+            
+            if (lesson.id === id) {
+              const parsed = lessonSchema.safeParse(lesson);
+              if (!parsed.success) return res.status(500).json({ error: 'Μη έγκυρη δομή μαθήματος' });
+              return res.json(parsed.data);
+            }
+          }
+        }
+      } catch (err) {
+        // Track directory doesn't exist, skip
+        continue;
+      }
+    }
+    
+    res.status(404).json({ error: 'Το μάθημα δεν βρέθηκε' });
   } catch (err) {
-    res.status(404).json({ error: 'Το μάθημα δεν βρέθηκε' })
+    console.error('Error loading lesson:', err);
+    res.status(500).json({ error: 'Σφάλμα φόρτωσης μαθήματος' });
   }
 })
 
