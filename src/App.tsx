@@ -23,9 +23,9 @@ function useLesson(id: number) {
 
 function Navbar({ percent }: { percent: number }) {
   return (
-    <div className="sticky top-0 z-10 bg-white/70 backdrop-blur border-b border-gray-200">
-      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="text-lg font-semibold">Μαθήματα JavaScript</Link>
+    <div className="sticky top-0 z-10 border-b border-white/10 bg-[#0b0f17]/80 backdrop-blur">
+      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <Link to="/" className="text-lg font-semibold text-white">Μαθήματα JavaScript</Link>
         <div className="w-48"><Progress value={percent} /></div>
       </div>
     </div>
@@ -36,14 +36,14 @@ function ListPage() {
   const lessons = useLessons()
   const { percent } = useProgress(lessons.length)
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0b0f17]">
       <Navbar percent={percent} />
-      <div className="max-w-5xl mx-auto px-4 py-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="max-w-6xl mx-auto px-4 py-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {lessons.map(l => (
           <Card key={l.id}>
             <CardContent>
               <div className="flex flex-col gap-3">
-                <h3 className="text-lg font-semibold text-gray-900">{l.title}</h3>
+                <h3 className="text-lg font-semibold text-white">{l.title}</h3>
                 <Link to={`/μάθημα/${l.id}`} className="mt-1">
                   <Button className="w-full">Έναρξη</Button>
                 </Link>
@@ -86,18 +86,18 @@ function ViewerPage() {
     if (lesson) setCode(lesson.starterCode)
   }, [lesson])
 
-  if (!lesson) return <div className="p-6">Φόρτωση...</div>
+  if (!lesson) return <div className="p-6 text-white">Φόρτωση...</div>
 
   const prevId = id > 1 ? id - 1 : null
   const nextId = id + 1
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0b0f17]">
       <Navbar percent={0} />
-      <div className="max-w-5xl mx-auto px-4 py-6 grid lg:grid-cols-2 gap-6">
+      <div className="max-w-6xl mx-auto px-4 py-6 grid lg:grid-cols-2 gap-6">
         <div className="space-y-4">
-          <h1 className="text-2xl font-bold text-gray-900">{lesson.title}</h1>
-          <p className="text-gray-700 whitespace-pre-wrap">{lesson.explanation}</p>
+          <h1 className="text-2xl font-bold text-white">{lesson.title}</h1>
+          <p className="text-gray-300 whitespace-pre-wrap">{lesson.explanation}</p>
           <div className="flex gap-2">
             <Button onClick={() => markCompleted(lesson.id)}>Σήμανση ως ολοκληρωμένο</Button>
           </div>
